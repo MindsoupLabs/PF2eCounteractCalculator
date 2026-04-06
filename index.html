@@ -296,8 +296,8 @@
     function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
     function getRanks() {
-        const cr = clamp(parseInt(document.getElementById('yourRank').value)   || 1, 1, 10);
-        const tr = clamp(parseInt(document.getElementById('targetRank').value) || 1, 1, 13);
+        const cr = clamp(parseInt(document.getElementById('yourRank').value)   || 1, 0, 10);
+        const tr = clamp(parseInt(document.getElementById('targetRank').value) || 1, 0, 14);
         return { cr, tr };
     }
 
