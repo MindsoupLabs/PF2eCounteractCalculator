@@ -247,7 +247,7 @@
         <div class="rank-group">
             <label>Your Effect<br>Rank</label>
             <div class="rank-input-row">
-                <input type="number" id="yourRank" min="1" max="10" value="3">
+                <input type="number" id="yourRank" min="0" max="10" value="3">
                 <div class="stepper">
                     <button onclick="step('yourRank', 1)">▲</button>
                     <button onclick="step('yourRank', -1)">▼</button>
@@ -260,7 +260,7 @@
         <div class="rank-group">
             <label>Target Effect<br>Rank</label>
             <div class="rank-input-row">
-                <input type="number" id="targetRank" min="1" max="13" value="3">
+                <input type="number" id="targetRank" min="0" max="14" value="3">
                 <div class="stepper">
                     <button onclick="step('targetRank', 1)">▲</button>
                     <button onclick="step('targetRank', -1)">▼</button>
@@ -303,7 +303,7 @@
 
     function step(id, delta) {
         const el = document.getElementById(id);
-        el.value = clamp((parseInt(el.value) || 1) + delta, 1, parseInt(el.max));
+        el.value = clamp((parseInt(el.value) || 1) + delta, 0, parseInt(el.max));
         calculate();
     }
 
