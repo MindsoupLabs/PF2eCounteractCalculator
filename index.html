@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PF2e Counteract Calculator by Mindsoup Labs</title>
+    <style>
+        :root {
+            --bg: #1a1510;
+            --surface: #231c14;
+            --border: #4a3820;
+            --accent: #c9a84c;
+            --text: #e8dcc8;
+            --text-muted: #9a8a6a;
+            --green: #5a9e5a;
+            --green-bg: rgba(90, 158, 90, 0.12);
+            --green-border: rgba(90, 158, 90, 0.35);
+            --red: #c05050;
+            --red-bg: rgba(192, 80, 80, 0.12);
+            --red-border: rgba(192, 80, 80, 0.35);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2.5rem 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.75rem;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* --- Rank inputs --- */
+
+        .rank-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .rank-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .rank-group label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .rank-group input[type="number"] {
+            width: 90px;
+            height: 64px;
+            font-size: 2.2rem;
+            font-family: inherit;
+            text-align: center;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 5px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .rank-group input[type="number"]::-webkit-outer-spin-button,
+        .rank-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .rank-group input[type="number"]:focus {
+            border-color: var(--accent);
+        }
+
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .stepper button {
+            width: 28px;
+            height: 28px;
+            background: var(--border);
+            border: none;
+            border-radius: 3px;
+            color: var(--text);
+            font-size: 1rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+
+        .stepper button:hover { background: var(--accent); color: var(--bg); }
+
+        .rank-input-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vs-label {
+            color: var(--text-muted);
+            font-style: italic;
+            align-self: center;
+            padding-bottom: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        /* --- Summary line --- */
+
+        .summary {
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            padding: 0.6rem;
+            border-radius: 4px;
+            background: rgba(201, 168, 76, 0.08);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            color: var(--text-muted);
+        }
+
+        .summary strong { color: var(--accent); }
+
+        /* --- Result rows --- */
+
+        .results { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        .result-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            transition: opacity 0.2s;
+        }
+
+        .result-row.ok  { background: var(--green-bg); border-color: var(--green-border); }
+        .result-row.bad { background: var(--red-bg);   border-color: var(--red-border); }
+
+        .degree {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .deg-cs  { color: #7ec87e; }
+        .deg-s   { color: #a8d8a8; }
+        .deg-f   { color: #d8a8a8; }
+        .deg-cf  { color: #c87e7e; }
+
+        .outcome {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.88rem;
+        }
+
+        .outcome.ok  { color: var(--green); }
+        .outcome.bad { color: var(--red); }
+
+        .outcome .icon { font-size: 1rem; }
+
+        /* --- Rules reference --- */
+
+        .rules {
+            margin-top: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .rules h3 {
+            color: var(--accent);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+        }
+
+        .rules-intro {
+            margin-bottom: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .rules-link { color: var(--accent); }
+        .rules-link:hover { text-decoration: none; }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.1rem 0.75rem;
+        }
+
+        .rules-grid b { color: var(--text); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Counteract Calculator</h1>
+    <p class="subtitle">Pathfinder 2e</p>
+</header>
+
+<div class="panel">
+    <div class="rank-row">
+        <div class="rank-group">
+            <label>Your Effect<br>Rank</label>
+            <div class="rank-input-row">
+                <input type="number" id="yourRank" min="1" max="10" value="3">
+                <div class="stepper">
+                    <button onclick="step('yourRank', 1)">▲</button>
+                    <button onclick="step('yourRank', -1)">▼</button>
+                </div>
+            </div>
+        </div>
+
+        <span class="vs-label">vs</span>
+
+        <div class="rank-group">
+            <label>Target Effect<br>Rank</label>
+            <div class="rank-input-row">
+                <input type="number" id="targetRank" min="1" max="13" value="3">
+                <div class="stepper">
+                    <button onclick="step('targetRank', 1)">▲</button>
+                    <button onclick="step('targetRank', -1)">▼</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="results" id="results"></div>
+
+    <div class="rules">
+        <h3>Rules Reference</h3>
+        <p class="rules-intro">For Counteracting with spells, your Counteract check modifier is your spellcasting modifier plus your spellcasting proficiency bonus plus any modifiers specifically to Counteracting. Roll this check against the DC of the effect (the effect's caster's DC, the affliction DC, etc). See the full rules <a href="https://2e.aonprd.com/Rules.aspx?ID=3280" target="_blank" class="rules-link">here</a>.</p>
+        <div class="rules-grid">
+            <b>Critical Success</b><span>Counteract if your rank &ge; target rank &minus; 3</span>
+            <b>Success</b>         <span>Counteract if your rank &ge; target rank &minus; 1</span>
+            <b>Failure</b>         <span>Counteract if your rank &gt; target rank</span>
+            <b>Critical Failure</b><span>Always fails to counteract</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const degrees = [
+        { key: 'cs',  label: 'Critical Success', cssClass: 'deg-cs', test: (cr, tr) => cr >= tr - 3 },
+        { key: 's',   label: 'Success',           cssClass: 'deg-s',  test: (cr, tr) => cr >= tr - 1 },
+        { key: 'f',   label: 'Failure',           cssClass: 'deg-f',  test: (cr, tr) => cr > tr       },
+        { key: 'cf',  label: 'Critical Failure',  cssClass: 'deg-cf', test: ()       => false          },
+    ];
+
+    function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+    function getRanks() {
+        const cr = clamp(parseInt(document.getElementById('yourRank').value)   || 1, 1, 10);
+        const tr = clamp(parseInt(document.getElementById('targetRank').value) || 1, 1, 13);
+        return { cr, tr };
+    }
+
+    function step(id, delta) {
+        const el = document.getElementById(id);
+        el.value = clamp((parseInt(el.value) || 1) + delta, 1, parseInt(el.max));
+        calculate();
+    }
+
+    function calculate() {
+        const { cr, tr } = getRanks();
+
+        // Determine minimum required degree (worst degree that still succeeds)
+        let minimum = null;
+        for (let i = degrees.length - 1; i >= 0; i--) {
+            if (degrees[i].test(cr, tr)) { minimum = degrees[i].label; break; }
+        }
+
+        const summaryEl = document.getElementById('summary');
+        if (minimum) {
+            summaryEl.innerHTML = `Minimum needed: <strong>${minimum}</strong>`;
+        } else {
+            summaryEl.innerHTML = `<strong>Cannot counteract</strong> — your rank is too low`;
+        }
+
+        document.getElementById('results').innerHTML = degrees.map(d => {
+            const ok = d.test(cr, tr);
+            return `
+                <div class="result-row ${ok ? 'ok' : 'bad'}">
+                    <span class="degree ${d.cssClass}">${d.label}</span>
+                    <span class="outcome ${ok ? 'ok' : 'bad'}">
+                        <span class="icon">${ok ? '✓' : '✗'}</span>
+                        ${ok ? 'Counteract succeeds' : 'Counteract fails'}
+                    </span>
+                </div>`;
+        }).join('');
+    }
+
+    document.getElementById('yourRank').addEventListener('input', calculate);
+    document.getElementById('targetRank').addEventListener('input', calculate);
+
+    calculate();
+</script>
+</body>
+</html>
