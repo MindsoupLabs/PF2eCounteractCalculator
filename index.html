@@ -39,7 +39,7 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.6rem;
             color: var(--accent);
             letter-spacing: 0.04em;
         }
@@ -233,6 +233,14 @@
         }
 
         .rules-grid b { color: var(--text); }
+
+        .rank-dc-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 0.35rem;
+            min-height: 1.2em;
+        }
     </style>
 </head>
 <body>
@@ -247,12 +255,13 @@
         <div class="rank-group">
             <label>Your Effect<br>Rank</label>
             <div class="rank-input-row">
-                <input type="number" id="yourRank" min="0" max="10" value="3">
+                <input type="number" id="yourRank" min="0" max="12" value="3">
                 <div class="stepper">
                     <button onclick="step('yourRank', 1)">▲</button>
                     <button onclick="step('yourRank', -1)">▼</button>
                 </div>
             </div>
+            <p class="rank-dc-hint"></p>
         </div>
 
         <span class="vs-label">vs</span>
@@ -260,12 +269,13 @@
         <div class="rank-group">
             <label>Target Effect<br>Rank</label>
             <div class="rank-input-row">
-                <input type="number" id="targetRank" min="0" max="14" value="3">
+                <input type="number" id="targetRank" min="0" max="16" value="3">
                 <div class="stepper">
                     <button onclick="step('targetRank', 1)">▲</button>
                     <button onclick="step('targetRank', -1)">▼</button>
                 </div>
             </div>
+            <p class="rank-dc-hint" id="targetDC"></p>
         </div>
     </div>
 
@@ -286,6 +296,8 @@
 </div>
 
 <script>
+    const spellRankDC = { 1:15, 2:18, 3:20, 4:23, 5:26, 6:28, 7:31, 8:34, 9:36, 10:39, 11:42, 12:46, 13:50, 14:54, 15:58, 16:62 };
+
     const degrees = [
         { key: 'cs',  label: 'Critical Success', cssClass: 'deg-cs', test: (cr, tr) => cr >= tr - 3 },
         { key: 's',   label: 'Success',           cssClass: 'deg-s',  test: (cr, tr) => cr >= tr - 1 },
@@ -296,8 +308,8 @@
     function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
 
     function getRanks() {
-        const cr = clamp(parseInt(document.getElementById('yourRank').value)   || 0, 0, 10);
-        const tr = clamp(parseInt(document.getElementById('targetRank').value) || 0, 0, 14);
+        const cr = clamp(parseInt(document.getElementById('yourRank').value)   || 0, 0, 12);
+        const tr = clamp(parseInt(document.getElementById('targetRank').value) || 0, 0, 16);
         return { cr, tr };
     }
 
@@ -316,9 +328,12 @@
             if (degrees[i].test(cr, tr)) { minimum = degrees[i].label; break; }
         }
 
+        const dc = spellRankDC[tr];
+        document.getElementById('targetDC').innerHTML = dc ? `typical <a href="https://2e.aonprd.com/Rules.aspx?ID=2629" target="_blank" class="rules-link">level based DC</a>: ${dc}` : '';
+
         const summaryEl = document.getElementById('summary');
         if (minimum) {
-            summaryEl.innerHTML = `Minimum needed: <strong>${minimum}</strong>`;
+            summaryEl.innerHTML = `Minimum result needed: <strong>${minimum}</strong>`;
         } else {
             summaryEl.innerHTML = `<strong>Cannot counteract</strong> — your rank is too low`;
         }
